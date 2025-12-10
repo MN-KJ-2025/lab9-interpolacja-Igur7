@@ -24,24 +24,33 @@ def bar_cheb_weights(n: int = 10) -> np.ndarray | None:
 
 
 def barycentric_inte(
-    xi: np.ndarray, yi: np.ndarray, wi: np.ndarray, x: np.ndarray
+xi: np.ndarray, yi: np.ndarray, wi: np.ndarray, x: np.ndarray
 ) -> np.ndarray | None:
-    """Funkcja przeprowadza interpolację metodą barycentryczną dla zadanych 
-    węzłów xi i wartości funkcji interpolowanej yi używając wag wi. Zwraca 
-    wyliczone wartości funkcji interpolującej dla argumentów x w postaci 
-    wektora (n,).
 
-    Args:
-        xi (np.ndarray): Wektor węzłów interpolacji (m,).
-        yi (np.ndarray): Wektor wartości funkcji interpolowanej w węzłach (m,).
-        wi (np.ndarray): Wektor wag interpolacji (m,).
-        x (np.ndarray): Wektor argumentów dla funkcji interpolującej (n,).
-    
-    Returns:
-        (np.ndarray): Wektor wartości funkcji interpolującej (n,).
-        Jeżeli dane wejściowe są niepoprawne funkcja zwraca `None`.
-    """
-    return None
+    if not (isinstance(xi, np.ndarray) and isinstance(yi, np.ndarray) and isinstance(wi, np.ndarray) and isinstance(x, np.ndarray)):
+        return None
+    if not (xi.ndim == 1 and yi.ndim == 1 and wi.ndim == 1 and x.ndim == 1):
+        return None
+    if not (len(xi) == len(yi) == len(wi)):
+        return None
+    m = len(xi)
+    n = len(x)
+    result = np.zeros(n)
+    for k in range(n):
+        numerator = 0.0
+        denominator = 0.0
+        exact_match = False
+        for j in range(m):
+            if x[k] == xi[j]:
+                result[k] = yi[j]
+                exact_match = True
+                break
+            temp = wi[j] / (x[k] - xi[j])
+            numerator += temp * yi[j]
+            denominator += temp
+        if not exact_match:
+            result[k] = numerator / denominator
+    return result
 
 
 def L_inf(
