@@ -27,31 +27,39 @@ def barycentric_inte(
 xi: np.ndarray, yi: np.ndarray, wi: np.ndarray, x: np.ndarray
 ) -> np.ndarray | None:
 
-    if not (isinstance(xi, np.ndarray) and isinstance(yi, np.ndarray) and isinstance(wi, np.ndarray) and isinstance(x, np.ndarray)):
-        return None
-    if not (xi.ndim == 1 and yi.ndim == 1 and wi.ndim == 1 and x.ndim == 1):
-        return None
-    if not (len(xi) == len(yi) == len(wi)):
-        return None
-    m = len(xi)
-    n = len(x)
-    result = np.zeros(n)
-    for k in range(n):
-        numerator = 0.0
-        denominator = 0.0
-        exact_match = False
-        for j in range(m):
-            if x[k] == xi[j]:
-                result[k] = yi[j]
-                exact_match = True
-                break
-            temp = wi[j] / (x[k] - xi[j])
-            numerator += temp * yi[j]
-            denominator += temp
-        if not exact_match:
-            result[k] = numerator / denominator
-    return result
+    """Funkcja wykonująca interpolację barycentryczną.
 
+    Args:
+        xi (np.ndarray): Węzły interpolacji (n,).
+        yi (np.ndarray): Wartości funkcji w węzłach (n,).
+        wi (np.ndarray): Wagi barycentryczne (n,).
+        x (np.ndarray): Punkty, w których ma być obliczona wartość 
+            interpolowanego wielomianu (m,).
+
+    Returns:
+        np.ndarray: Wartości interpolowanego wielomianu w punktach x (m,).
+        Jeżeli dane wejściowe są niepoprawne funkcja zwraca `None`.
+    """
+    if not all(isinstance(arr, np.ndarray) for arr in (xi, yi, wi, x)):
+        return None
+    if not (xi.ndim == yi.ndim == wi.ndim == 1):
+        return None
+    if xi.ndim != 1 or yi.ndim != 1 or wi.ndim != 1 or x.ndim != 1:
+        return None
+    if xi.size == 0 or x.size == 0:
+        return None
+    P = np.empty_like(x, dtype=float) #tablica wynikowa
+    
+    for j,xj in enumerate(x):
+        diff = xj - xi
+        idx = np.where(diff == 0)[0]
+        if idx.size > 0:
+            P[j] = yi[idx[0]]
+            continue
+        numerator = np.sum(wi * yi / diff)
+        denominator = np.sum(wi / diff)
+        P[j] = numerator / denominator
+    return P
 
 def L_inf(
     xr: int | float | list | np.ndarray, x: int | float | list | np.ndarray
